@@ -39,9 +39,45 @@ if (rsvpForm) {
     });
 }
 
-// ANIMACIÓN DE FLORES
-function createFlowerAnimation() {
-    const flowerContainer = document.querySelector('.flower-animation');
+// ANIMACIÓN DE PÉTALOS
+let petals = [];
+let petalContainers = [];
+
+function inicializarAnimacionPetalos() {
+    // Configurar el contenedor principal para los pétalos
+    const mainContainer = document.querySelector('.flower-animation');
+    mainContainer.innerHTML = ''; // Limpiar contenedor
+    
+    // Asegurarse de que el contenedor principal esté en segundo plano
+    mainContainer.style.zIndex = '-1';
+    
+    // Iniciar generación periódica de pétalos
+    generarPetalosAleatoriamente();
+    
+    // Generar pétalos iniciales (menos cantidad para no saturar)
+    for (let i = 0; i < 15; i++) {
+        generarNuevoPetalo();
+    }
+}
+
+function generarPetalosAleatoriamente() {
+    // Generar pétalos cada cierto tiempo
+    setInterval(() => {
+        // Generar entre 1 y 3 pétalos cada vez
+        const cantidadPetalos = Math.floor(Math.random() * 3) + 1;
+        
+        for (let i = 0; i < cantidadPetalos; i++) {
+            generarNuevoPetalo();
+        }
+        
+        // Limpiar pétalos antiguos que ya no se ven
+        // para evitar saturar la memoria
+        limpiarPetalosAntiguos();
+    }, 2000); // Cada 2 segundos
+}
+
+function generarNuevoPetalo() {
+    const container = document.querySelector('.flower-animation');
     const petalColors = [
         '#e84a5f', // rojo intenso
         '#ff5a5f', // rojo coral
@@ -50,235 +86,157 @@ function createFlowerAnimation() {
         '#e71d36', // rojo brillante
         '#c21858'  // rosa oscuro
     ];
-    const numFlowers = 15; // Menos flores para mejor rendimiento (más detalladas)
     
-    // Crear flores más detalladas
-    for (let i = 0; i < numFlowers; i++) {
-        createRealisticFlower(flowerContainer, petalColors);
-    }
-}
-
-function createRealisticFlower(container, colors) {
-    // Crear contenedor de la flor
-    const flower = document.createElement('div');
-    flower.className = 'flower';
+    // Crear el pétalo
+    const petal = document.createElement('div');
+    petal.className = 'petal';
     
-    // Determinar desde qué esquina aparecerá la flor (0-3)
-    const corner = Math.floor(Math.random() * 4);
-    let startX, startY;
+    // Propiedades físicas del pétalo
+    const size = Math.random() * 30 + 15; // Entre 15px y 45px
+    const rotationInicial = Math.random() * 360;
+    const opacity = Math.random() * 0.4 + 0.3; // Entre 0.3 y 0.7
+    const color = petalColors[Math.floor(Math.random() * petalColors.length)];
     
-    switch (corner) {
-        case 0: // Esquina superior izquierda
-            startX = -5;
-            startY = -5;
-            break;
-        case 1: // Esquina superior derecha
-            startX = 105;
-            startY = -5;
-            break;
-        case 2: // Esquina inferior izquierda
-            startX = -5;
-            startY = 105;
-            break;
-        case 3: // Esquina inferior derecha
-            startX = 105;
-            startY = 105;
-            break;
-    }
-    
-    // Puntos finales aleatorios dentro del viewport
-    const endX = 20 + Math.random() * 60; // entre 20% y 80% del ancho
-    const endY = 20 + Math.random() * 60; // entre 20% y 80% del alto
-    
-    const flowerSize = Math.random() * 20 + 50; // entre 50px y 70px
-    const animationDuration = Math.random() * 20 + 15; // entre 15 y 35 segundos
-    const delay = Math.random() * 10; // retraso entre 0 y 10 segundos
-    
-    // Número de pétalos (entre a y 10)
-    const numPetals = Math.floor(Math.random() * 3) + 8;
-    
-    // Color base para esta flor
-    const baseColor = colors[Math.floor(Math.random() * colors.length)];
-    const secondaryColor = colors[Math.floor(Math.random() * colors.length)];
-    
-    // Crear SVG para la flor
+    // Crear SVG para el pétalo
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("width", flowerSize);
-    svg.setAttribute("height", flowerSize);
+    svg.setAttribute("width", size);
+    svg.setAttribute("height", size);
     svg.setAttribute("viewBox", "0 0 100 100");
-    svg.style.position = "absolute";
-    svg.style.left = "0";
-    svg.style.top = "0";
     
-    // Crear capa de pétalos externos (más grandes)
-    for (let i = 0; i < numPetals; i++) {
-        // Ángulo para distribuir los pétalos uniformemente
-        const angle = (i / numPetals) * 2 * Math.PI;
-        
-        // Crear un pétalo con curvas bezier para un aspecto más natural
-        const petal = document.createElementNS(svgNS, "path");
-        
-        // Punto de inicio (centro de la flor)
-        const startPointX = 50;
-        const startPointY = 50;
-        
-        // Punto final del pétalo
-        const endPointX = 50 + 40 * Math.cos(angle);
-        const endPointY = 50 + 40 * Math.sin(angle);
-        
-        // Puntos de control para las curvas bezier
-        const ctrlPoint1X = 50 + 20 * Math.cos(angle - 0.3);
-        const ctrlPoint1Y = 50 + 20 * Math.sin(angle - 0.3);
-        const ctrlPoint2X = 50 + 30 * Math.cos(angle + 0.3);
-        const ctrlPoint2Y = 50 + 30 * Math.sin(angle + 0.3);
-        
-        // Definir la ruta del pétalo con curvas bezier
-        const path = `
-            M ${startPointX} ${startPointY}
-            C ${ctrlPoint1X} ${ctrlPoint1Y}, ${ctrlPoint2X} ${ctrlPoint2Y}, ${endPointX} ${endPointY}
-            C ${ctrlPoint2X + 5} ${ctrlPoint2Y + 5}, ${ctrlPoint1X + 5} ${ctrlPoint1Y + 5}, ${startPointX} ${startPointY}
-            Z
-        `;
-        
-        petal.setAttribute("d", path);
-        petal.setAttribute("fill", baseColor);
-        petal.setAttribute("opacity", "0.9");
-        petal.setAttribute("stroke", secondaryColor);
-        petal.setAttribute("stroke-width", "0.5");
-        
-        svg.appendChild(petal);
-    }
+    // Crear un pétalo con forma de lágrima
+    const petalPath = document.createElementNS(svgNS, "path");
     
-    // Crear una segunda capa de pétalos internos (más pequeños)
-    for (let i = 0; i < numPetals; i++) {
-        const angle = (i / numPetals) * 2 * Math.PI + (Math.PI / numPetals); // Offset para intercalar
-        
-        const petal = document.createElementNS(svgNS, "path");
-        
-        const startPointX = 50;
-        const startPointY = 50;
-        
-        // Pétalo más pequeño
-        const endPointX = 50 + 25 * Math.cos(angle);
-        const endPointY = 50 + 25 * Math.sin(angle);
-        
-        const ctrlPoint1X = 50 + 10 * Math.cos(angle - 0.2);
-        const ctrlPoint1Y = 50 + 10 * Math.sin(angle - 0.2);
-        const ctrlPoint2X = 50 + 20 * Math.cos(angle + 0.2);
-        const ctrlPoint2Y = 50 + 20 * Math.sin(angle + 0.2);
-        
-        const path = `
-            M ${startPointX} ${startPointY}
-            C ${ctrlPoint1X} ${ctrlPoint1Y}, ${ctrlPoint2X} ${ctrlPoint2Y}, ${endPointX} ${endPointY}
-            C ${ctrlPoint2X + 3} ${ctrlPoint2Y + 3}, ${ctrlPoint1X + 3} ${ctrlPoint1Y + 3}, ${startPointX} ${startPointY}
-            Z
-        `;
-        
-        petal.setAttribute("d", path);
-        petal.setAttribute("fill", secondaryColor);
-        petal.setAttribute("opacity", "0.95");
-        
-        svg.appendChild(petal);
-    }
-    
-    // Crear el centro de la flor
-    const flowerCenter = document.createElementNS(svgNS, "circle");
-    flowerCenter.setAttribute("cx", "50");
-    flowerCenter.setAttribute("cy", "50");
-    flowerCenter.setAttribute("r", "8");
-    flowerCenter.setAttribute("fill", "#c21858"); // Centro rosa oscuro
-    
-    // Añadir detalles al centro para más realismo
-    const centerPattern = document.createElementNS(svgNS, "circle");
-    centerPattern.setAttribute("cx", "50");
-    centerPattern.setAttribute("cy", "50");
-    centerPattern.setAttribute("r", "6");
-    centerPattern.setAttribute("fill", "#e71d36"); // Rojo brillante
-    centerPattern.setAttribute("opacity", "0.7");
-    
-    svg.appendChild(flowerCenter);
-    svg.appendChild(centerPattern);
-    
-    // Agregar SVG al contenedor de flor
-    flower.appendChild(svg);
-    
-    // Aplicar estilos al contenedor
-    flower.style.position = 'absolute';
-    flower.style.width = `${flowerSize}px`;
-    flower.style.height = `${flowerSize}px`;
-    flower.style.opacity = '0';
-    flower.style.zIndex = '10';
-    
-    // Agregar la flor al contenedor
-    container.appendChild(flower);
-    
-    // Animación única para cada flor
-    const animationName = `flower${Date.now()}${Math.floor(Math.random() * 1000)}`;
-    
-    // Definir animación desde las esquinas al centro
-    const keyframes = `
-    @keyframes ${animationName} {
-        0% {
-            left: ${startX}%;
-            top: ${startY}%;
-            opacity: 0;
-            transform: scale(0.3) rotate(0deg);
-            filter: drop-shadow(0 0 2px rgba(255,255,255,0.7));
-        }
-        15% {
-            opacity: 0.9;
-            filter: drop-shadow(0 0 3px rgba(255,255,255,0.8));
-        }
-        80% {
-            opacity: 0.9;
-            filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
-        }
-        100% {
-            left: ${endX}%;
-            top: ${endY}%;
-            opacity: 0;
-            transform: scale(1) rotate(${Math.random() * 180 - 90}deg);
-            filter: drop-shadow(0 0 5px rgba(255,255,255,0.6));
-        }
-    }`;
-    
-    // Aplicar la animación
-    const styleSheet = document.createElement('style');
-    styleSheet.type = 'text/css';
-    styleSheet.innerText = keyframes;
-    document.head.appendChild(styleSheet);
-    
-    flower.style.animation = `${animationName} ${animationDuration}s ease-in-out ${delay}s infinite`;
-}
-
-// Añadir estilos de las flores
-function addFlowerStyles() {
-    const styleSheet = document.createElement('style');
-    styleSheet.type = 'text/css';
-    
-    const styles = `
-    .flower {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        filter: drop-shadow(0 0 3px rgba(255,255,255,0.5));
-    }
-    
-    .flower-animation {
-        overflow: hidden;
-    }
+    // Forma de pétalo más orgánica
+    const path = `
+        M 50 20
+        C 70 30, 90 50, 50 90
+        C 10 50, 30 30, 50 20
+        Z
     `;
     
-    styleSheet.innerText = styles;
+    petalPath.setAttribute("d", path);
+    petalPath.setAttribute("fill", color);
+    petalPath.setAttribute("opacity", opacity.toString());
+    
+    svg.appendChild(petalPath);
+    petal.appendChild(svg);
+    
+    // Posición inicial - siempre desde arriba pero con posición X aleatoria
+    const startX = Math.random() * 110 - 5; // Entre -5% y 105% del ancho
+    const startY = -20; // Empezar arriba del viewport
+    
+    // Propiedades para movimiento aleatorio
+    const velocidadBase = Math.random() * 0.8 + 0.3; // Entre 0.3 y 1.1
+    
+    // Añadir variabilidad en la dirección de caída
+    const desviacionX = Math.random() * 4 - 2; // Entre -2 y 2
+    
+    // Tiempo de vida (entre 10 y 15 segundos)
+    const tiempoVida = Math.random() * 5000 + 10000;
+    
+    // Estilos iniciales
+    petal.style.position = "absolute";
+    petal.style.left = `${startX}%`;
+    petal.style.top = `${startY}%`;
+    petal.style.transform = `rotate(${rotationInicial}deg)`;
+    
+    // Momento de creación para controlar tiempo de vida
+    const createdAt = Date.now();
+    
+    // Objeto para mantener el estado y propiedades del pétalo
+    const petalObj = {
+        element: petal,
+        posX: startX,
+        posY: startY,
+        rotation: rotationInicial,
+        velocidad: velocidadBase,
+        desviacionHorizontal: desviacionX,
+        createdAt: createdAt,
+        tiempoVida: tiempoVida,
+        isActive: true,
+        // Variables para movimiento errático
+        lastUpdateTime: Date.now(),
+        oscillationOffset: Math.random() * 100,
+        waveMagnitude: Math.random() * 2.5 + 0.5, // Magnitud de oscilación entre 0.5 y 3
+        waveFrequency: Math.random() * 0.02 + 0.005 // Frecuencia entre 0.005 y 0.025
+    };
+    
+    petals.push(petalObj);
+    container.appendChild(petal);
+}
+
+function actualizarPetalos() {
+    const now = Date.now();
+    
+    petals.forEach(petal => {
+        if (!petal.isActive) return;
+        
+        const elapsed = now - petal.lastUpdateTime;
+        petal.lastUpdateTime = now;
+        
+        // Tiempo transcurrido en segundos para cálculos de física
+        const deltaTime = elapsed / 1000;
+        
+        // Calcular cambio en posición vertical (caída)
+        petal.posY += petal.velocidad * deltaTime * 30; // Velocidad de caída
+        
+        // Movimiento errático horizontal usando tiempo y oscilación sinusoidal
+        const oscillation = Math.sin((now / 1000 + petal.oscillationOffset) * petal.waveFrequency) * petal.waveMagnitude;
+        petal.posX += oscillation * deltaTime * 15;
+        
+        // Rotación gradual aleatoria
+        petal.rotation += (Math.random() - 0.5) * 2 * deltaTime * 50;
+        
+        // Aplicar transformaciones
+        if (petal.element) {
+            petal.element.style.top = `${petal.posY}%`;
+            petal.element.style.left = `${petal.posX}%`;
+            petal.element.style.transform = `rotate(${petal.rotation}deg)`;
+        }
+        
+        // Verificar tiempo de vida
+        if (now - petal.createdAt > petal.tiempoVida || petal.posY > 120) {
+            // Marcar para eliminación si está fuera de la pantalla o expiró
+            petal.isActive = false;
+        }
+    });
+    
+    // Solicitar siguiente frame de animación
+    requestAnimationFrame(actualizarPetalos);
+}
+
+function limpiarPetalosAntiguos() {
+    // Eliminar pétalos inactivos del DOM y de la colección
+    for (let i = petals.length - 1; i >= 0; i--) {
+        if (!petals[i].isActive) {
+            if (petals[i].element && petals[i].element.parentNode) {
+                petals[i].element.parentNode.removeChild(petals[i].element);
+            }
+            petals.splice(i, 1);
+        }
+    }
+}
+
+// Añadir estilos de los pétalos
+function addPetalStyles() {
+    const styleSheet = document.createElement('style');
+    styleSheet.innerHTML = `
+        .petal {
+            pointer-events: none;
+            filter: drop-shadow(0 0 2px rgba(0,0,0,0.1));
+            transform-origin: center;
+            will-change: transform, top, left;
+        }
+    `;
     document.head.appendChild(styleSheet);
 }
 
 // Iniciar animación cuando la página cargue
 document.addEventListener('DOMContentLoaded', () => {
-    addFlowerStyles();
-    createFlowerAnimation();
+    addPetalStyles();
+    inicializarAnimacionPetalos();
+    actualizarPetalos();
     
     // Efecto de scroll suave para los enlaces de navegación
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -290,19 +248,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
+    // Animación de entrada para elementos
+    const animatedElements = document.querySelectorAll('.header-content, section h2, .event-card, .gallery-item, .rule-card, .gift-card');
+    animatedElements.forEach(element => {
+        element.classList.add('animate-on-scroll');
+    });
+
     // Animación de entrada para elementos cuando se hacen visibles
-    const animateOnScroll = () => {
-        const elements = document.querySelectorAll('.event-card, .gift-card, .gallery-item');
+    function animateOnScroll() {
+        const elements = document.querySelectorAll('.animate-on-scroll');
         
         elements.forEach(element => {
-            const position = element.getBoundingClientRect();
+            const elementTop = element.getBoundingClientRect().top;
+            const elementVisible = 150;
             
-            // Si el elemento está en el viewport
-            if (position.top < window.innerHeight && position.bottom >= 0) {
-                element.style.animation = 'fadeIn 1s forwards';
+            if (elementTop < window.innerHeight - elementVisible) {
+                element.classList.add('active');
             }
         });
-    };
+    }
     
     // Ejecutar la animación al cargar y al hacer scroll
     animateOnScroll();
